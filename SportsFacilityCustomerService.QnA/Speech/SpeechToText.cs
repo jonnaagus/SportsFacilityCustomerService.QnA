@@ -18,10 +18,15 @@ namespace SportsFacilityCustomerService.Speech
             try
             {
                 // Ladda konfiguration
-                var builder = new ConfigurationBuilder().AddJsonFile("appsettings.json");
+                var builder = new ConfigurationBuilder()
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
                 var configuration = builder.Build();
-                string cogSvcKey = configuration["Speech:CognitiveServiceKey"];
-                string cogSvcRegion = configuration["Speech:CognitiveServiceRegion"];
+                string cogSvcKey = configuration["Azure:Speech:CognitiveServiceKey"];
+                string cogSvcRegion = configuration["Azure:Speech:CognitiveServiceRegion"];
+
+                // Debug
+                Console.WriteLine($"Subscription Key: {cogSvcKey}");
+                Console.WriteLine($"Region: {cogSvcRegion}");
 
                 // Konfigurera taligenkänning
                 speechConfig = SpeechConfig.FromSubscription(cogSvcKey, cogSvcRegion);
@@ -47,9 +52,10 @@ namespace SportsFacilityCustomerService.Speech
             catch (Exception ex)
             {
                 Console.WriteLine($"An error occurred: {ex.Message}");
+                Console.WriteLine($"StackTrace: {ex.StackTrace}"); // Error information
             }
 
-            return command; // Returnera den transkriberade texten
+            return command;
         }
 
         private static async Task<string> TranscribeCommandAsync()
@@ -82,16 +88,19 @@ namespace SportsFacilityCustomerService.Speech
                         if (cancellation.Reason == CancellationReason.Error)
                         {
                             Console.WriteLine($"Error details: {cancellation.ErrorDetails}");
+                            Console.WriteLine($"ErrorCode: {cancellation.ErrorCode}");
                         }
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"An error occurred: {ex.Message}");
+                    Console.WriteLine($"An error occurred in TranscribeCommandAsync: {ex.Message}");
+                    Console.WriteLine($"StackTrace: {ex.StackTrace}"); // Error information
                 }
             }
 
             return command;
         }
+
     }
 }
